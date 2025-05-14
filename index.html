@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Maravilhas de Cambará do Sul</title>
   <style>
     body { font-family: Arial, sans-serif; background: #f0f0f0; margin: 0; }
@@ -23,122 +23,114 @@
   </style>
 </head>
 <body>
-<header>
-  <h1>Maravilhas de Cambará do Sul</h1>
-  <p>Vote na sua favorita!</p>
-</header>
-<div class="container" id="cards"></div>
-<div class="admin-block">
-  <input type="password" id="adminCode" placeholder="Código de administrador" />
-  <button onclick="checkCode()">Entrar</button>
-  <div class="admin-panel" id="adminPanel">
-    <h3>Painel de Administração</h3>
-    <label><input type="checkbox" id="adsToggle" onchange="toggleAds()" /> Exibir anúncios</label>
-    <input type="text" id="adIDInput" placeholder="ID do anúncio (ca‑pub‑...)" />
-    <button onclick="saveAdID()">Salvar ID</button>
-    <button onclick="resetVotes()">Resetar Votos</button>
+  <header>
+    <h1>Maravilhas de Cambará do Sul</h1>
+    <p>Vote na sua favorita!</p>
+  </header>
+  <div class="container" id="cards"></div>
+  <div class="admin-block">
+    <input type="password" id="adminCode" placeholder="Código de administrador" />
+    <button onclick="checkCode()">Entrar</button>
+    <div class="admin-panel" id="adminPanel">
+      <h3>Painel de Administração</h3>
+      <label><input type="checkbox" id="adsToggle" onchange="toggleAds()" /> Exibir anúncios</label>
+      <input type="text" id="adIDInput" placeholder="ID do anúncio (ca‑pub‑...)" />
+      <button onclick="saveAdID()">Salvar ID</button>
+      <button onclick="resetVotes()">Resetar Votos</button>
+    </div>
   </div>
-</div>
-<footer>
-  <div id="adsContainer">
-    <iframe id="adFrame" width="320" height="50" frameborder="0" scrolling="no" style="border:none;"></iframe>
-  </div>
-  <span class="version">Versão 0.6 com Firebase</span>
-</footer>
+  <footer>
+    <div id="adsContainer">
+      <iframe id="adFrame" width="320" height="50" frameborder="0" scrolling="no" style="border:none;"></iframe>
+    </div>
+    <span class="version">Versão 0.6</span>
+  </footer>
 
-<!-- Firebase -->
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.7.1/firebase-app.js";
-  import { getDatabase, ref, set, get, child, update } from "https://www.gstatic.com/firebasejs/11.7.1/firebase-database.js";
+  <!-- Firebase e Lógica -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.7.1/firebase-app.js";
+    import { getDatabase, ref, get, set, onValue } from "https://www.gstatic.com/firebasejs/11.7.1/firebase-database.js";
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyCC74j3Fg68yl4fkfU0E_rCBfF6iVZ0u6Q",
-    authDomain: "cambara-bcf23.firebaseapp.com",
-    projectId: "cambara-bcf23",
-    storageBucket: "cambara-bcf23.firebasestorage.app",
-    messagingSenderId: "642631892737",
-    appId: "1:642631892737:web:ed7e400d285b56262e6500",
-    measurementId: "G-SPVV8VL46J",
-    databaseURL: "https://cambara-bcf23-default-rtdb.firebaseio.com"
-  };
+    const firebaseConfig = {
+      apiKey: "AIzaSyCC74j3Fg68yl4fkfU0E_rCBfF6iVZ0u6Q",
+      authDomain: "cambara-bcf23.firebaseapp.com",
+      projectId: "cambara-bcf23",
+      storageBucket: "cambara-bcf23.firebasestorage.app",
+      messagingSenderId: "642631892737",
+      appId: "1:642631892737:web:ed7e400d285b56262e6500",
+      measurementId: "G-SPVV8VL46J",
+      databaseURL: "https://cambara-bcf23-default-rtdb.firebaseio.com"
+    };
 
-  const app = initializeApp(firebaseConfig);
-  const db = getDatabase(app);
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const KEY = "ZG4CAP0";
+    const votadoKey = "votadoUnico";
 
-  const KEY = "ZG4CAP0";
-  const maravilhas = [
-    { id: 'itaimbezinho', nome: 'Cânion Itaimbezinho', img: 'https://upload.wikimedia.org/wikipedia/commons/6/61/Canion_Itaimbezinho_-_Cambara_do_Sul_-_RS_-_panoramio.jpg' },
-    { id: 'fortaleza', nome: 'Cânion Fortaleza', img: 'https://upload.wikimedia.org/wikipedia/commons/f/f2/Canion_Fortaleza_-_Cambara_do_Sul_-_RS.jpg' },
-    { id: 'venancios', nome: 'Cachoeira dos Venâncios', img: 'https://upload.wikimedia.org/wikipedia/commons/4/45/Cachoeira_dos_Ven%C3%A2ncios.jpg' },
-    { id: 'tigre', nome: 'Cachoeira do Tigre Preto', img: 'https://via.placeholder.com/300x180?text=Tigre+Preto' },
-    { id: 'riodoboi', nome: 'Trilha do Rio do Boi', img: 'https://via.placeholder.com/300x180?text=Rio+do+Boi' },
-    { id: 'malacara', nome: 'Cânion Malacara', img: 'https://via.placeholder.com/300x180?text=Malacara' },
-    { id: 'faxinal', nome: 'Serra do Faxinal', img: 'https://via.placeholder.com/300x180?text=Faxinal' }
-  ];
+    const maravilhas = [
+      { id: 'itaimbezinho', nome: 'Cânion Itaimbezinho', img: 'https://stock.adobe.com/br/images/beautiful-view-of-a-waterfall-at-itaimbezinho-canyon-cambara-do-sul-rio-grande-do-sul-brazil/473417024' },
+      { id: 'fortaleza', nome: 'Cânion Fortaleza', img: 'https://stock.adobe.com/br/images/fog-envelopes-the-little-river-canyon-national-preserve-at-sunrise-from-a-high-sandstone-cliff-fort-payne-alabama-panorama/612150270' },
+      { id: 'venancios', nome: 'Cachoeira dos Venâncios', img: 'https://stock.adobe.com/br/images/cascata-dos-venancios-em-cambara-do-sul-brasil/259017942' },
+      { id: 'tigre', nome: 'Cachoeira do Tigre Preto', img: '/mnt/data/A_high-resolution_photograph_captures_Cachoeira_do.png' },
+      { id: 'riodoboi', nome: 'Trilha do Rio do Boi', img: '/mnt/data/A_high-resolution_photograph_captures_a_scene_in_T.png' },
+      { id: 'malacara', nome: 'Cânion Malacara', img: '/mnt/data/A_high-resolution_photograph_captures_Cânion_Malac.png' },
+      { id: 'faxinal', nome: 'Serra do Faxinal', img: '/mnt/data/A_high-resolution_digital_photograph_captures_Serr.png' }
+    ];
 
-  async function renderCards() {
-    const cont = document.getElementById('cards');
-    cont.innerHTML = '';
-    const dbRef = ref(db);
-    const snapshot = await get(child(dbRef, 'votos'));
-    const votos = snapshot.exists() ? snapshot.val() : {};
-    const voted = localStorage.getItem('votadoUnico') === 'true';
-
-    maravilhas.forEach(m => {
-      const v = votos[m.id] || 0;
-      cont.innerHTML += `<div class="card"><img src="${m.img}" alt="${m.nome}"><div class="card-content"><h3>${m.nome}</h3><p>${v} voto(s)</p><button onclick="vote('${m.id}')" ${voted ? 'disabled' : ''}>${voted ? 'Voto registrado' : 'Votar'}</button></div></div>`;
-    });
-  }
-
-  window.vote = async function(id) {
-    if (localStorage.getItem('votadoUnico') === 'true') return;
-    const votoRef = ref(db, 'votos/' + id);
-    const snapshot = await get(votoRef);
-    const current = snapshot.exists() ? snapshot.val() : 0;
-    await set(votoRef, current + 1);
-    localStorage.setItem('votadoUnico', 'true');
-    renderCards();
-  }
-
-  window.checkCode = function() {
-    if (document.getElementById('adminCode').value === KEY) {
-      document.getElementById('adminPanel').style.display = 'block';
-      document.getElementById('adsToggle').checked = localStorage.getItem('adsEnabled') === 'true';
-    } else alert('Código incorreto!');
-  }
-
-  window.resetVotes = async function() {
-    if (confirm('Resetar todos os votos?')) {
-      const resetObj = Object.fromEntries(maravilhas.map(m => [m.id, 0]));
-      await set(ref(db, 'votos'), resetObj);
-      localStorage.setItem('votadoUnico', 'false');
-      renderCards();
+    function renderCards(votos) {
+      const cont = document.getElementById('cards');
+      const votado = localStorage.getItem(votadoKey) === 'true';
+      cont.innerHTML = '';
+      maravilhas.forEach(m => {
+        const count = votos[m.id] || 0;
+        cont.innerHTML += `
+          <div class="card">
+            <img src="${m.img}" alt="${m.nome}">
+            <div class="card-content">
+              <h3>${m.nome}</h3>
+              <p>${count} voto(s)</p>
+              <button onclick="vote('${m.id}')" ${votado ? 'disabled' : ''}>
+                ${votado ? 'Voto registrado' : 'Votar'}
+              </button>
+            </div>
+          </div>
+        `;
+      });
     }
-  }
 
-  window.toggleAds = function() {
-    localStorage.setItem('adsEnabled', document.getElementById('adsToggle').checked);
-    updateAdDisplay();
-  }
+    window.vote = async function(id) {
+      if (localStorage.getItem(votadoKey) === 'true') return;
+      const voteRef = ref(db, `votos/${id}`);
+      const snap = await get(voteRef);
+      const atual = snap.exists() ? snap.val() : 0;
+      await set(voteRef, atual + 1);
+      localStorage.setItem(votadoKey, 'true');
+      carregarVotos();
+    }
 
-  window.saveAdID = function() {
-    localStorage.setItem('adClient', document.getElementById('adIDInput').value.trim());
-    updateAdDisplay();
-  }
+    function carregarVotos() {
+      onValue(ref(db, 'votos'), (snapshot) => {
+        renderCards(snapshot.val() || {});
+      });
+    }
 
-  function updateAdDisplay() {
-    const on = localStorage.getItem('adsEnabled') === 'true';
-    const id = localStorage.getItem('adClient');
-    const div = document.getElementById('adsContainer');
-    const frame = document.getElementById('adFrame');
-    if (on && id) {
-      frame.src = `https://googleads.g.doubleclick.net/pagead/ads?client=${id}&slotname=8996594556&format=auto`;
-      div.style.display = 'block';
-    } else div.style.display = 'none';
-  }
+    window.checkCode = function() {
+      if (document.getElementById('adminCode').value === KEY) {
+        document.getElementById('adminPanel').style.display = 'block';
+      } else alert('Código incorreto!');
+    }
 
-  renderCards();
-  updateAdDisplay();
-</script>
+    window.resetVotes = async function() {
+      if (confirm('Deseja resetar todos os votos?')) {
+        const data = Object.fromEntries(maravilhas.map(m => [m.id, 0]));
+        await set(ref(db, 'votos'), data);
+        localStorage.setItem(votadoKey, 'false');
+        carregarVotos();
+      }
+    }
+
+    // Inicialização
+    carregarVotos();
+  </script>
 </body>
 </html>
